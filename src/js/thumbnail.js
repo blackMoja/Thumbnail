@@ -11,7 +11,10 @@ class ThumbNail {
 
   async makeTn(img, ro) {
     const getOhOw = await this.getOhOw(img);
-    const ratio = await this.calcRatio(getOhOw);
+    const size = await this.calcWH(getOhOw, ro);
+    const url = await this.getDataUrl(img);
+
+    return this.thumbNail(url, size);
   }
 
   getOhOw(img) {
@@ -28,11 +31,36 @@ class ThumbNail {
     });
   }
 
-  calcRatio(origin) {
-    const { oh, ow } = origin;
+  calcWH(origin, ro) {
     // max-width / max-height wrapper div 가 600 * 600 이면 이걸 계산해야댐.
-    // rw : 
-    // rh
+    return new Promise(resolve => {
+      const { oh, ow } = origin;
+      const { rh, rw } = ro;
+      const ratioW = Math.round(ow / rw);
+      const ratioH = Math.round(oh / rh);
+
+      resolve({ rh: Math.round(oh / ratioH), rw: Math.round(ow / ratioW) });
+    });
+  }
+
+  getDataUrl(img) {
+    return new Promise(resolve => {
+      const fr = new FileReader();
+
+      fr.onload = e => {
+        return resolve(e.target.result);
+      };
+      fr.readAsDataURL(img);
+    });
+  }
+
+  thumbNail(url, size) {
+    let img = new Image(size.rw, size.rh);
+    img.crossOrigin = 'anonymous';
+    img.src = url;
+
+    console.log(img);
+    return img;
   }
 }
 
